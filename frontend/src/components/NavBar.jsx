@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   return (
@@ -15,7 +16,7 @@ export default function Navbar() {
       {/* Links - centered */}
       <ul className="hidden md:flex gap-12 text-lg text-gray-800 font-medium absolute left-1/2 transform -translate-x-1/2">
         <li className="hover:text-amber-700 cursor-pointer transition-colors">
-          Home
+          <Link to="/">Home</Link>
         </li>
         <li className="hover:text-amber-700 cursor-pointer transition-colors">
           About Us
@@ -27,12 +28,18 @@ export default function Navbar() {
 
       {/* Buttons */}
       <div className="flex gap-2 bg-gray-900 rounded-full p-1">
-        <button className="px-5 py-1.5 rounded-full bg-[#6B4226] text-white text-sm font-medium hover:bg-amber-800 transition-colors">
+        <Link 
+          to="/login"
+          className="px-5 py-1.5 rounded-full bg-[#6B4226] text-white text-sm font-medium hover:bg-amber-800 transition-colors"
+        >
           Login
-        </button>
-        <button className="px-5 py-1.5 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors">
+        </Link>
+        <Link 
+          to="/signup"
+          className="px-5 py-1.5 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+        >
           Sign Up
-        </button>
+        </Link>
       </div>
     </nav>
   );
