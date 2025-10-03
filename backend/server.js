@@ -5,7 +5,9 @@ import dotenv from "dotenv";
 
 // Routes
 import authRoutes from "./routes/auth.js";
-import menuRoutes from "./routes/menuRoutes.js";  // ✅ new import
+import menuRoutes from "./routes/menuRoutes.js";
+import coffeeRoutes from "./routes/coffee.js"; // ✅ coffee routes
+import paymentRoutes from "./routes/payment.js";
 
 dotenv.config();
 
@@ -17,11 +19,13 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/menu", menuRoutes);  // ✅ new menu API route
+app.use("/api/menu", menuRoutes);
+app.use("/api/coffees", coffeeRoutes); // ✅ now works
+app.use("/api/payment", paymentRoutes);
 
 // MongoDB connection
 mongoose
-  .connect(process.env.MONGO_URI) // uses your .env connection string
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
     app.listen(process.env.PORT, () =>
