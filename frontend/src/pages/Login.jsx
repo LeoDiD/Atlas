@@ -2,44 +2,73 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
-  const navigate = useNavigate(); // React Router navigation hook
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", {
         email: formData.email,
         password: formData.password,
       });
 
-      // Save JWT token in localStorage
-      localStorage.setItem("token", res.data.token);
+      const data = res.data;
 
-      alert("✅ Login successful!");
-      console.log("User:", res.data.user);
+      // ✅ Save all relevant data to localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("name", data.name);
+      localStorage.setItem("email", data.email); // ✅ Added email
 
-      // ✅ Redirect to Home dashboard
-      navigate("/home");
+      // ✅ Save full user object for other pages (like checkout)
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          token: data.token,
+        })
+      );
+
+      // ✅ Redirect based on role
+      toast.success(`Welcome back, ${data.name}!`);
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "❌ Login failed");
+      console.error("Login error:", err);
+      const errorMessage = err.response?.data?.error || "Invalid email or password";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#E2E1E6] p-6">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-10">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
         {/* Back Button */}
         <Link
           to="/"
@@ -49,18 +78,20 @@ export default function Login() {
         </Link>
 
         {/* Header */}
-        <h1 className="text-3xl font-bold text-center text-[#6B4226] mb-1">
-          Atlas Coffee
+        <h1 className="text-2xl font-bold text-center text-[#6B4226] mb-1">
+          Welcome Back!
         </h1>
-        <p className="text-center text-gray-700 mb-8">Click. Sip. Enjoy</p>
+        <p className="text-center text-gray-600 mb-6 text-sm">
+          Sign in to continue your coffee journey ☕
+        </p>
 
         {/* Form */}
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSubmit}>
           {/* Email */}
-          <div className="mb-6">
+          <div className="mb-4">
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-900 mb-2"
+              className="block text-sm font-medium text-gray-900 mb-1"
             >
               Email
             </label>
@@ -69,16 +100,17 @@ export default function Login() {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email address..."
-              className="w-full px-4 py-3 border border-[#6B4226] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B4226]/70"
+              placeholder="Enter your email"
+              className="w-full px-3 py-2 border border-[#6B4226] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B4226]/70"
+              required
             />
           </div>
 
           {/* Password */}
-          <div className="mb-6 relative">
+          <div className="mb-4 relative">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-900 mb-2"
+              className="block text-sm font-medium text-gray-900 mb-1"
             >
               Password
             </label>
@@ -87,41 +119,42 @@ export default function Login() {
               type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter your password..."
-              className="w-full px-4 py-3 border border-[#6B4226] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B4226]/70 pr-12"
+              placeholder="Enter your password"
+              className="w-full px-3 py-2 border border-[#6B4226] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B4226]/70 pr-10"
+              required
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-8 text-gray-500 hover:text-gray-700"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
-            <a
-              href="#"
-              className="text-sm text-gray-600 hover:underline absolute right-0 -bottom-6"
-            >
-              Forgot Password?
-            </a>
           </div>
 
-          {/* Login button */}
+          {/* Error Message */}
+          {error && (
+            <p className="text-red-600 text-sm mb-4 text-center">{error}</p>
+          )}
+
+          {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-[#6B4226] text-white py-3 rounded-lg font-semibold text-lg hover:bg-[#55331f] transition"
+            disabled={loading}
+            className="w-full bg-[#6B4226] text-white py-2.5 rounded-lg font-semibold text-base hover:bg-[#55331f] transition disabled:opacity-50"
           >
-            LOGIN
+            {loading ? "Signing in..." : "LOGIN"}
           </button>
         </form>
 
-        {/* Signup link */}
-        <p className="mt-6 text-center text-gray-600">
+        {/* Signup Link */}
+        <p className="mt-5 text-center text-gray-600 text-sm">
           Don’t have an account?{" "}
           <Link
             to="/signup"
             className="font-semibold hover:underline text-[#6B4226]"
           >
-            Sign up
+            Sign Up
           </Link>
         </p>
       </div>

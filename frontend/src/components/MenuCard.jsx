@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 
+const BACKEND_URL = "http://localhost:5000";
+const PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E";
+
 export default function MenuCard({ item, onAddToCart }) {
   const [open, setOpen] = useState(false);
   const [size, setSize] = useState("Medium");
@@ -34,18 +37,31 @@ export default function MenuCard({ item, onAddToCart }) {
   return (
     <>
       {/* Coffee Card */}
-      <div className="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 hover:shadow-lg transition w-[260px]">
+      <div className="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 hover:shadow-lg transition w-[260px] relative">
+        {/* Unavailable Overlay */}
+        {item.available === false && (
+          <div className="absolute inset-0 bg-gray-900/50 rounded-lg flex items-center justify-center z-10">
+            <span className="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+              UNAVAILABLE
+            </span>
+          </div>
+        )}
+        
         {/* Left: Coffee Image */}
-        <div className="flex-shrink-0 w-20 h-20 flex items-center justify-center rounded-full bg-[#F5E6D3]">
+        <div className={`flex-shrink-0 w-20 h-20 flex items-center justify-center rounded-full bg-[#F5E6D3] ${item.available === false ? 'opacity-50' : ''}`}>
           <img
-            src={item.image}
+            src={item.image ? `${BACKEND_URL}${item.image}` : PLACEHOLDER_IMAGE}
             alt={item.name}
             className="w-16 h-16 object-contain"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = PLACEHOLDER_IMAGE;
+            }}
           />
         </div>
 
         {/* Right: Info */}
-        <div className="flex flex-col flex-1">
+        <div className={`flex flex-col flex-1 ${item.available === false ? 'opacity-50' : ''}`}>
           <h3 className="text-sm font-bold text-gray-800">{item.name}</h3>
           <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
           <p className="text-sm font-semibold text-[#6B4226] mt-1">
@@ -53,10 +69,15 @@ export default function MenuCard({ item, onAddToCart }) {
           </p>
 
           <button
-            onClick={() => setOpen(true)}
-            className="mt-2 bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-xs self-start hover:bg-[#6B4226] hover:text-white transition"
+            onClick={() => item.available !== false && setOpen(true)}
+            disabled={item.available === false}
+            className={`mt-2 px-3 py-1 rounded-md text-xs self-start transition ${
+              item.available === false
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-100 text-gray-800 hover:bg-[#6B4226] hover:text-white'
+            }`}
           >
-            View detail
+            {item.available === false ? 'Out of Stock' : 'View detail'}
           </button>
         </div>
       </div>

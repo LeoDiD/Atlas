@@ -1,3 +1,4 @@
+// models/menu.js
 import mongoose from "mongoose";
 
 const menuSchema = new mongoose.Schema(
@@ -15,11 +16,15 @@ const menuSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["Coffee", "Pastry", "Cold Brew"], // categories
+      enum: ["Coffee", "Cold Brew", "Frappe", "Pastry", "Tea"],
       required: true,
     },
     image: {
-      type: String, // store image URL for now
+      type: String, // store image path or URL
+    },
+    available: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }

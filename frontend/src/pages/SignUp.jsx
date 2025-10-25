@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +24,7 @@ export default function SignUp() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("❌ Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
 
@@ -34,11 +35,13 @@ export default function SignUp() {
         email: formData.email,
         password: formData.password,
       });
-      alert(res.data.message); // "User created successfully"
-      // redirect to login page
-      window.location.href = "/login";
+      toast.success("Account created successfully! Redirecting to login...");
+      // redirect to login page after a short delay
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
     } catch (err) {
-      alert(err.response?.data?.message || "❌ Signup failed");
+      toast.error(err.response?.data?.error || "Signup failed. Please try again.");
     }
   };
 
